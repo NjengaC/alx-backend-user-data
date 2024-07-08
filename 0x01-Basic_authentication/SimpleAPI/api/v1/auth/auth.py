@@ -2,6 +2,7 @@
 """class Auth"""
 from flask import request
 from typing import List, TypeVar
+import re
 
 
 class Auth:
@@ -9,23 +10,21 @@ class Auth:
         """
         Check if the path requires authentication.
         """
-        if path is None:
-            return True
-        
-        if not excluded_paths or len(excluded_paths) == 0:
-            return True
-
-        if path[-1] != '/':
-            path += '/'
-        
-        for ex_path in excluded_paths:
-            if ex_path[-1] != '/':
-                ex_path += '/'
-            if path == ex_path:
-                return False
-
+    def require_auth(self, path: str, excluded_paths: List[str]) -> bool:
+        """Checks if a path requires authentication.
+        """
+        if path is not None and excluded_paths is not None:
+            for exclusion_path in map(lambda x: x.strip(), excluded_paths):
+                pattern = ''
+                if exclusion_path[-1] == '*':
+                    pattern = '{}.*'.format(exclusion_path[0:-1])
+                elif exclusion_path[-1] == '/':
+                    pattern = '{}/*'.format(exclusion_path[0:-1])
+                else:
+                    pattern = '{}/*'.format(exclusion_path)
+                if re.match(pattern, path):
+                    return False
         return True
-
 
     def authorization_header(self, request=None) -> str:
         """
