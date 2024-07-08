@@ -7,17 +7,39 @@ from typing import List, TypeVar
 class Auth:
     def require_auth(self, path: str, excluded_paths: List[str]) -> bool:
         """
-        This method will be used to check if a path requires authentication.
-        Currently, it returns False as a placeholder.
+        Check if the path requires authentication.
         """
-        return False
+        if path is None:
+            return True
+        
+        if not excluded_paths or len(excluded_paths) == 0:
+            return True
+
+        if path[-1] != '/':
+            path += '/'
+        
+        for ex_path in excluded_paths:
+            if ex_path[-1] != '/':
+                ex_path += '/'
+            if path == ex_path:
+                return False
+
+        return True
+
 
     def authorization_header(self, request=None) -> str:
         """
-        This method will be used to get the Authorization header from the request.
-        Currently, it returns None as a placeholder.
+        Get the Authorization header from the request.
         """
-        return None
+        if request is None:
+            return None
+        
+        auth_header = request.headers.get('Authorization')
+        if auth_header is None:
+            return None
+        
+        return auth_header
+
 
     def current_user(self, request=None) -> TypeVar('User'):
         """
